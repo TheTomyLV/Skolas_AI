@@ -1,0 +1,132 @@
+<!-- kods no https://www.codingame.com/playgrounds/59631/neural-network-xor-example-from-scratch-no-libs -->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <script>
+const VARIANCE_W = 0.5;
+const INPUTS = 2;
+const HIDDEN = 5;
+const OUTPUTS = 1;
+
+let hidden_weights = new Array(HIDDEN);
+for(let i=0;i<HIDDEN;i++){
+   hidden_weights[i]=new Array(INPUTS);
+   for (let j=0; j<INPUTS;j++){
+       hidden_weights[i][j]=Math.random()-VARIANCE_W;
+   }
+ }  
+let hidden_bias = new Array(HIDDEN);
+hidden_bias.fill(0);
+
+let output_weights = new Array(OUTPUTS);
+for(let i=0;i<OUTPUTS;i++){
+   output_weights[i]=new Array(OUTPUTS);
+    for (let j=0; j<HIDDEN;j++){
+        output_weights[i][j]=Math.random()-VARIANCE_W;
+    }
+}
+
+let output_bias = new Array(OUTPUTS);
+output_bias.fill(0);
+
+function sigmoid(x){
+    return 1.0 / (1.0 + Math.exp(-x));
+}
+
+function sigmoid_prime(x){
+    return x * (1 - x);
+}
+
+function predict(r){
+    let hiddens = [];
+    for(let i=0; i<HIDDEN;i++){
+        let hidden = 0;
+        for (let j=0; j<INPUTS;j++) hidden += hidden_weights[i][j] * inputs[r][j];
+        hidden = sigmoid(hidden + hidden_bias[i]);
+        hiddens.push(hidden);
+    }
+    let outputs = new Array(OUTPUTS);
+    for (let i=0; i<OUTPUTS;i++){
+        let output = 0;
+        for (let j=0; j<HIDDEN;j++) output += output_weights[i][j] * hiddens[j];
+        output = sigmoid(output + output_bias[i]);
+        outputs[i]=output;
+    }
+   
+    return outputs[0];
+}
+function learn(r,targets,alpha){
+    let  hiddens = [];
+    for (let i=0; i< HIDDEN; i++){
+        let hidden = 0;
+        for (let j=0; j< INPUTS; j++) {
+            hidden += hidden_weights[i][j] * inputs[r][j];
+        }
+        hidden = sigmoid(hidden + hidden_bias[i]);
+        hiddens.push(hidden);
+    }
+    let outputs = [];
+    for (let i=0; i< OUTPUTS; i++){
+        let output = 0;
+        for (let j=0; j< HIDDEN; j++) output += output_weights[i][j] * hiddens[j];
+        output = sigmoid(output + output_bias[i]);
+        outputs.push(output);
+    }
+
+    let derrors = [];
+    for (let i=0; i< OUTPUTS; i++){
+        let derror = (targets[i] - outputs[i]) * sigmoid_prime(outputs[i]);
+        derrors.push(derror);
+    }
+    let ds = new Array(HIDDEN);
+    ds.fill(0);
+    for (let i=0;i<OUTPUTS; i++){
+        for (let j=0; j< HIDDEN; j++){
+            ds[j] += derrors[i] * output_weights[i][j] * sigmoid_prime(hiddens[j]);
+    }}
+    for (let i=0; i<OUTPUTS; i++){
+        for (let j=0; j< HIDDEN; j++) output_weights[i][j] += alpha * hiddens[j] * derrors[i];
+        output_bias[i] += alpha * derrors[i];
+    }
+    for (let i=0; i< HIDDEN; i++){
+        for (let j=0; j< INPUTS; j++) hidden_weights[i][j] += alpha * inputs[r][j] * ds[i];
+        hidden_bias[i] += alpha * ds[i];
+    }
+}    
+function shuffle(){
+    for (let x=0;x<4;x++){
+        let y=Math.floor(Math.random()*4);
+        let tmp=ind[x];
+        ind[x]=ind[y];
+        ind[y]=tmp;
+    }
+}
+const inputs = [[0,0],[0,1],[1,0],[1,1]];
+const required = [[0],[0],[0],[1]];
+const ind=[0,1,2,3];
+for(let ep=0;ep<10000;ep++){
+    shuffle();
+    ind.forEach(r=>{ 
+         learn(r,required[r],1);
+    });
+    if (ep % 1000 == 0){
+        let cost = 0
+        for(let r=0;r<4;r++){
+            let o = predict(r);
+            cost += (required[r][0] - o) ** 2;
+        }    
+        cost /= 4
+        console.log(ep+" mean squared error: "+cost);
+    }   
+}
+for(let r=0;r<4;r++){
+    let result = predict(r);
+    document.write("for input "+inputs[r]+" expected "+required[r][0]+" predicted "+result+"<br>");
+}
+        </script>
+    </body>
+</html>

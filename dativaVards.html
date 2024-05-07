@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Vārds datīvā</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://unpkg.com/brain.js@2.0.0-beta.23/dist/browser.js"></script>
+        <script src="neuralNetwork.js"></script>
+    </head>
+    <body>
+        <h1>Sveicini kādu!</h1>
+        <label for="names">Vārds/i nominatīvā atdalīti ar komatu:</label><br>
+        <input type="text" id="names" name="names"><button onclick="sveicinat()">Sveicināt</button>
+        <div id="demo"></div>
+
+        <script>
+            const network = new brain.recurrent.LSTM();
+            function sveicinat() {
+                let names = document.getElementById("names").value;
+                names = names.split(",");
+                names.forEach((element, index) => {
+                    let name = element.trim().toLowerCase();
+                    let result = network.run(name);
+                    let nameInDativ="";
+                    switch(result){
+                        case "1":
+                            nameInDativ=name.substring(0, name.length-1)+"am";
+                            break;
+                        case "2":
+                            nameInDativ=name.substring(0, name.length-2)+"im";
+                            break;
+                        case "3":
+                            nameInDativ=name.substring(0, name.length-1)+"m";
+                            break;
+                        case "4":
+                            nameInDativ=name+"i";
+                            break;
+                        case "5":
+                            nameInDativ=name+"i";
+                            break;
+                    }
+                    names[index] = nameInDativ;
+                });
+                let text = "";
+                names.forEach((element, index) => {
+                    text += capitalizeFirstLetter(element);
+                    if(index != names.length-1) text+=", ";
+                });
+                
+                document.getElementById("demo").innerHTML = "Sveiciens "+ text+"!";
+            }
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+            function trainNetwork(){
+                network.train([
+                    {input:"oskars", output:"1"},
+                    {input:"olivers", output:"1"},
+                    {input:"roberts", output:"1"},
+                    {input:"marks", output:"1"},
+                    {input:"gustavs", output:"1"},
+                    {input:"emīls", output:"1"},
+                    {input:"markuss", output:"1"},
+                    {input:"daniels", output:"1"},
+                    {input:"mārtiņš", output:"1"},
+                    {input:"aleksandrs", output:"1"},
+                    {input:"kristofers", output:"1"},
+                    {input:"everts", output:"1"},
+                    {input:"marats", output:"1"},
+                    {input:"martiņs", output:"1"},
+                    {input:"edvards", output:"1"},
+                    {input:"maksims", output:"1"},
+                    {input:"kristians", output:"1"},
+                    {input:"valters", output:"1"},
+                    {input:"kārlis", output:"2"},
+                    {input:"jānis", output:"2"},
+                    {input:"reinis", output:"2"},
+                    {input:"miķelim", output:"2"},
+                    {input:"mārcis", output:"2"},
+                    {input:"edžus", output:"3"},
+                    {input:"mikus", output:"3"},
+                    {input:"markus", output:"3"},
+                    {input:"sofija", output:"4"},
+                    {input:"emīlija", output:"4"},
+                    {input:"anna", output:"4"},
+                    {input:"marta", output:"4"},
+                    {input:"keita", output:"4"},
+                    {input:"nikola", output:"4"},
+                    {input:"sāra", output:"4"},
+                    {input:"milana", output:"4"},
+                    {input:"alise", output:"5"},
+                    {input:"estere", output:"5"},
+                    {input:"elizabete", output:"5"},
+                    {input:"luīze", output:"5"},
+                ], {iterations:10000});
+                const networkState = network.toJSON();
+                console.log(networkState)
+            }
+        //trainNetwork()
+        network.fromJSON(trainedNetwork);
+        
+        
+        </script>
+    </body>
+</html>
